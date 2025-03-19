@@ -26,6 +26,7 @@ const { MTN_CG, MTN_SME } = require("../API_DATA/newData");
 // const generateVpayAcc = require("../Utils/generateVpayAccount");
 const generateAcc = require("../Utils/accountNumbers");
 const { default: axios } = require("axios");
+const generateBillStackAcc = require("../Utils/generateBillStackAcc");
 
 const register = async (req, res) => {
   let { email, password, passwordCheck, userName, referredBy, phoneNumber } =
@@ -58,8 +59,10 @@ const register = async (req, res) => {
   try {
     await User.create({ ...req.body });
     // generate account number
-    await generateAcc({ userName, email });
+    // await generateAcc({ userName, email });
     const user = await User.findOne({ email });
+    generateBillStackAcc({ bankName: "palmpay", userId: user._id });
+    generateBillStackAcc({ bankName: "9psb", userId: user._id });
     const token = user.createJWT();
     const allDataList = await Data.find();
     const MTN_SME_PRICE = allDataList
@@ -138,8 +141,10 @@ const login = async (req, res) => {
   if (!isPasswordCorrect)
     return res.status(400).json({ msg: "Incorrect password" });
   // generate account number
-  if (user.accountNumbers.length < 1)
-    await generateAcc({ userName, email: user.email });
+  if (user.accountNumbers.length < 1) {
+    await generateBillStackAcc({ bankName: "palmpay", userId: user._id });
+    await generateBillStackAcc({ bankName: "9psb", userId: user._id });
+  }
 
   const token = user.createJWT();
   const isReseller = user.userType === "reseller";
