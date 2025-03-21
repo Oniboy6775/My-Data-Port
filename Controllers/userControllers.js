@@ -722,6 +722,7 @@ const validateUser = async (req, res) => {
     console.log(error);
   }
 };
+
 // Contacts controller
 
 const fetchContact = async (req, res) => {
